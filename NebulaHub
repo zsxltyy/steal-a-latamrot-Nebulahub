@@ -145,8 +145,8 @@ local function checkKey()
 
         local KeyFrame = Instance.new("Frame")
         KeyFrame.Parent = ScreenGui
-        KeyFrame.Size = UDim2.new(0,300,0,170)
-        KeyFrame.Position = UDim2.new(0.5,-150,0.4,-85)
+        KeyFrame.Size = UDim2.new(0,300,0,200)
+        KeyFrame.Position = UDim2.new(0.5,-150,0.4,-100)
         KeyFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
         KeyFrame.BorderSizePixel = 0
         KeyFrame.Active = true
@@ -165,13 +165,24 @@ local function checkKey()
         local VerifyBtn = Instance.new("TextButton")
         VerifyBtn.Parent = KeyFrame
         VerifyBtn.Size = UDim2.new(0.35,0,0,35)
-        VerifyBtn.Position = UDim2.new(0.1,0,0,100)
+        VerifyBtn.Position = UDim2.new(0.1,0,0,110)
         VerifyBtn.BackgroundColor3 = Color3.fromRGB(0,200,50)
         VerifyBtn.Text = "Verify Key"
         VerifyBtn.TextColor3 = Color3.fromRGB(255,255,255)
         VerifyBtn.Font = Enum.Font.GothamBold
         VerifyBtn.TextSize = 16
         VerifyBtn.BorderSizePixel = 0
+
+        local GetKeyBtn = Instance.new("TextButton")
+        GetKeyBtn.Parent = KeyFrame
+        GetKeyBtn.Size = UDim2.new(0.35,0,0,35)
+        GetKeyBtn.Position = UDim2.new(0.55,0,0,110)
+        GetKeyBtn.BackgroundColor3 = Color3.fromRGB(50,120,255)
+        GetKeyBtn.Text = "Get Key"
+        GetKeyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+        GetKeyBtn.Font = Enum.Font.GothamBold
+        GetKeyBtn.TextSize = 16
+        GetKeyBtn.BorderSizePixel = 0
 
         VerifyBtn.MouseButton1Click:Connect(function()
             if KeyBox.Text == validKey then
@@ -181,6 +192,11 @@ local function checkKey()
             else
                 warn("[NebulaHub] Invalid key!")
             end
+        end)
+
+        GetKeyBtn.MouseButton1Click:Connect(function()
+            setclipboard(keyLink)
+            print("[NebulaHub] Key link copied to clipboard!")
         end)
     end
 end
