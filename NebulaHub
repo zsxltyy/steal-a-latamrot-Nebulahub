@@ -5,13 +5,17 @@ local keyFile = "nebulahub_key.txt"
 local validKey = "10ko57cl69"
 local keyLink = "https://linkvertise.com/1443607/JNXqZHX147qx?o=sharing"
 
--- Noclip változók
+-- Noclip változók  
 local noclip = false
 local currentCharacter = player.Character or player.CharacterAdded:Wait()
 local noclipConnection
 
 -- Mentett pozíció
 local savedPosition = nil
+
+-- Speed változók
+local speedOn = false
+local originalSpeed = 16 -- alapértelmezett Roblox WalkSpeed
 
 -- Noclip toggle funkció
 local function toggleNoclip(state)
@@ -45,6 +49,7 @@ end
 local function initNebulaHub()
     currentCharacter = player.Character or player.CharacterAdded:Wait()
     local humanoid = currentCharacter:WaitForChild("Humanoid")
+    originalSpeed = humanoid.WalkSpeed -- Eredeti sebesség mentése
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "NebulaHubGUI"
@@ -106,23 +111,19 @@ local function initNebulaHub()
 
     -- Speed Boost
     local speedBtn = createButton("Speed Boost: Off",130,Color3.fromRGB(255,80,80))
-    local speedOn = false
-    local originalSpeed = humanoid.WalkSpeed
     speedBtn.MouseButton1Click:Connect(function()
         speedOn = not speedOn
         currentCharacter = player.Character or player.CharacterAdded:Wait()
         humanoid = currentCharacter:FindFirstChild("Humanoid")
-        if speedOn then
-            if humanoid then
+        if humanoid then
+            if speedOn then
                 originalSpeed = humanoid.WalkSpeed
                 humanoid.WalkSpeed = 100
-            end
-            speedBtn.Text = "Speed Boost: On"
-        else
-            if humanoid then
+                speedBtn.Text = "Speed Boost: On"
+            else
                 humanoid.WalkSpeed = originalSpeed
+                speedBtn.Text = "Speed Boost: Off"
             end
-            speedBtn.Text = "Speed Boost: Off"
         end
     end)
 
@@ -240,6 +241,13 @@ end
 -- Karakter spawn figyelése (halál után újra létrehozza a GUI-t és visszaállítja a funkciókat)
 player.CharacterAdded:Connect(function(char)
     currentCharacter = char
+    -- Spawn után visszaállítjuk az eredeti sebességet
+    local humanoid = currentCharacter:WaitForChild("Humanoid")
+    humanoid.WalkSpeed = originalSpeed
+    -- Ha speed boost be van kapcsolva, újra aktiváljuk
+    if speedOn then
+        humanoid.WalkSpeed = 100
+    end
     checkKey()
 end)
 
