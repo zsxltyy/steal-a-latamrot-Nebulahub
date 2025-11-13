@@ -1,4 +1,4 @@
---// 🌌 NebulaHub - Full Auto Version 🌌 //--
+--// 🌌 NebulaHub - Full Auto Version (Javított) 🌌 //--  
 local player = game.Players.LocalPlayer
 local keyFile = "nebulahub_key.txt"
 local validKey = "10ko57cl69"
@@ -89,18 +89,30 @@ local function initNebulaHub()
         end
     end)
 
+    -- Noclip javított változat
     local noclipBtn = createButton("Noclip: Off",175,Color3.fromRGB(255,80,80))
     local noclip = false
+    local originalCollides = {}
+
     noclipBtn.MouseButton1Click:Connect(function()
         noclip = not noclip
         noclipBtn.Text = noclip and "Noclip: On" or "Noclip: Off"
-    end)
 
-    game:GetService("RunService").Stepped:Connect(function()
-        if noclip and player.Character then
-            for _, part in pairs(player.Character:GetDescendants()) do
+        character = player.Character
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
-                    part.CanCollide = false
+                    if noclip then
+                        originalCollides[part] = part.CanCollide
+                        part.CanCollide = false
+                    else
+                        if originalCollides[part] ~= nil then
+                            part.CanCollide = originalCollides[part]
+                            originalCollides[part] = nil
+                        else
+                            part.CanCollide = true
+                        end
+                    end
                 end
             end
         end
