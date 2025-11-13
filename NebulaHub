@@ -70,14 +70,21 @@ local function initNebulaHub()
     local speedBtn = createButton("Speed Boost: Off",130,Color3.fromRGB(255,80,80))
     local speedOn = false
     local originalSpeed = humanoid.WalkSpeed
+
     speedBtn.MouseButton1Click:Connect(function()
         speedOn = not speedOn
+        character = player.Character or player.CharacterAdded:Wait()
+        humanoid = character:FindFirstChild("Humanoid")
         if speedOn then
-            originalSpeed = humanoid.WalkSpeed
-            humanoid.WalkSpeed = 100
+            if humanoid then
+                originalSpeed = humanoid.WalkSpeed
+                humanoid.WalkSpeed = 100
+            end
             speedBtn.Text = "Speed Boost: On"
         else
-            humanoid.WalkSpeed = originalSpeed
+            if humanoid then
+                humanoid.WalkSpeed = originalSpeed
+            end
             speedBtn.Text = "Speed Boost: Off"
         end
     end)
