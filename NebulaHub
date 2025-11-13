@@ -1,8 +1,9 @@
---// 🌌 NebulaHub - Full Auto Version (Javított) 🌌 //--  
+--// 🌌 NebulaHub - Full Auto Version 🌌 //--
 local player = game.Players.LocalPlayer
 local keyFile = "nebulahub_key.txt"
 local validKey = "10ko57cl69"
 local keyLink = "https://linkvertise.com/1443607/JNXqZHX147qx?o=sharing"
+local RunService = game:GetService("RunService")
 
 -- Fő Hub funkció
 local function initNebulaHub()
@@ -89,30 +90,20 @@ local function initNebulaHub()
         end
     end)
 
-    -- Noclip javított változat
+    -- Stabil noclip
     local noclipBtn = createButton("Noclip: Off",175,Color3.fromRGB(255,80,80))
     local noclip = false
-    local originalCollides = {}
 
     noclipBtn.MouseButton1Click:Connect(function()
         noclip = not noclip
         noclipBtn.Text = noclip and "Noclip: On" or "Noclip: Off"
+    end)
 
-        character = player.Character
-        if character then
-            for _, part in pairs(character:GetDescendants()) do
+    RunService.Stepped:Connect(function()
+        if noclip and player.Character then
+            for _, part in pairs(player.Character:GetDescendants()) do
                 if part:IsA("BasePart") then
-                    if noclip then
-                        originalCollides[part] = part.CanCollide
-                        part.CanCollide = false
-                    else
-                        if originalCollides[part] ~= nil then
-                            part.CanCollide = originalCollides[part]
-                            originalCollides[part] = nil
-                        else
-                            part.CanCollide = true
-                        end
-                    end
+                    part.CanCollide = false
                 end
             end
         end
@@ -158,7 +149,6 @@ local function checkKey()
     if key == validKey then
         initNebulaHub()
     else
-        -- Kulcs GUI
         local ScreenGui = Instance.new("ScreenGui")
         ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
@@ -220,17 +210,14 @@ local function checkKey()
     end
 end
 
--- Figyeljük a karakter spawn-t, hogy halál után is induljon
 player.CharacterAdded:Connect(function()
     checkKey()
 end)
 
--- Figyeljük a teleport eseményeket, szerverváltás után is fusson
 game:GetService("Players").PlayerAdded:Connect(function(plr)
     if plr == player then
         checkKey()
     end
 end)
 
--- Első futtatás
 checkKey()
