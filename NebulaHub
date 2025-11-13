@@ -15,7 +15,14 @@ local savedPosition = nil
 
 -- Speed változók
 local speedOn = false
-local originalSpeed = 16 -- alapértelmezett Roblox WalkSpeed
+local defaultSpeed = 16
+local speedBtn -- gomb referenciája
+
+-- Humanoid lekérése
+local function getHumanoid()
+    currentCharacter = player.Character
+    return currentCharacter and currentCharacter:FindFirstChildOfClass("Humanoid")
+end
 
 -- Noclip toggle funkció
 local function toggleNoclip(state)
@@ -45,11 +52,29 @@ local function toggleNoclip(state)
     end
 end
 
+-- Speed Boost toggle
+local function toggleSpeed()
+    speedOn = not speedOn
+    local humanoid = getHumanoid()
+    if humanoid then
+        if speedOn then
+            humanoid.WalkSpeed = 100
+            if speedBtn then speedBtn.Text = "Speed Boost: On" end
+        else
+            humanoid.WalkSpeed = defaultSpeed
+            if speedBtn then speedBtn.Text = "Speed Boost: Off" end
+        end
+    end
+end
+
 -- GUI létrehozása
 local function initNebulaHub()
     currentCharacter = player.Character or player.CharacterAdded:Wait()
-    local humanoid = currentCharacter:WaitForChild("Humanoid")
-    originalSpeed = humanoid.WalkSpeed -- Eredeti sebesség mentése
+    local humanoid = getHumanoid()
+    if humanoid then
+        defaultSpeed = humanoid.WalkSpeed
+        if speedOn then humanoid.WalkSpeed = 100 end
+    end
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "NebulaHubGUI"
@@ -67,7 +92,7 @@ local function initNebulaHub()
 
     local Title = Instance.new("TextLabel")
     Title.Parent = Frame
-    Title.Text = "🌌 NebulaHub - Steal a Latamrot 🌌"
+    Title.Text = "NebulaHub - Steal a Latamrot 🌌"
     Title.Size = UDim2.new(1,0,0,30)
     Title.BackgroundTransparency = 1
     Title.TextColor3 = Color3.fromRGB(255,255,255)
@@ -110,22 +135,8 @@ local function initNebulaHub()
     end)
 
     -- Speed Boost
-    local speedBtn = createButton("Speed Boost: Off",130,Color3.fromRGB(255,80,80))
-    speedBtn.MouseButton1Click:Connect(function()
-        speedOn = not speedOn
-        currentCharacter = player.Character or player.CharacterAdded:Wait()
-        humanoid = currentCharacter:FindFirstChild("Humanoid")
-        if humanoid then
-            if speedOn then
-                originalSpeed = humanoid.WalkSpeed
-                humanoid.WalkSpeed = 100
-                speedBtn.Text = "Speed Boost: On"
-            else
-                humanoid.WalkSpeed = originalSpeed
-                speedBtn.Text = "Speed Boost: Off"
-            end
-        end
-    end)
+    speedBtn = createButton("Speed Boost: Off",130,Color3.fromRGB(255,80,80))
+    speedBtn.MouseButton1Click:Connect(toggleSpeed)
 
     -- Noclip
     local noclipBtn = createButton("Noclip: Off",175,Color3.fromRGB(255,80,80))
@@ -241,12 +252,9 @@ end
 -- Karakter spawn figyelése (halál után újra létrehozza a GUI-t és visszaállítja a funkciókat)
 player.CharacterAdded:Connect(function(char)
     currentCharacter = char
-    -- Spawn után visszaállítjuk az eredeti sebességet
-    local humanoid = currentCharacter:WaitForChild("Humanoid")
-    humanoid.WalkSpeed = originalSpeed
-    -- Ha speed boost be van kapcsolva, újra aktiváljuk
-    if speedOn then
-        humanoid.WalkSpeed = 100
+    local humanoid = getHumanoid()
+    if humanoid then
+        humanoid.WalkSpeed = speedOn and 100 or defaultSpeed
     end
     checkKey()
 end)
