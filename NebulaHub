@@ -1,16 +1,53 @@
-
 --// 🌌 NebulaHub - Full Auto Version 🌌 //--
 local player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
 local keyFile = "nebulahub_key.txt"
 local validKey = "10ko57cl69"
 local keyLink = "https://linkvertise.com/1443607/JNXqZHX147qx?o=sharing"
 
--- Fő Hub funkció
+-- Noclip változók
+local noclip = false
+local currentCharacter = player.Character or player.CharacterAdded:Wait()
+local noclipConnection
+
+-- Mentett pozíció
+local savedPosition = nil
+
+-- Noclip toggle funkció
+local function toggleNoclip(state)
+    noclip = state
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+    if noclip then
+        noclipConnection = RunService.Heartbeat:Connect(function()
+            if currentCharacter then
+                for _, part in pairs(currentCharacter:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    else
+        if currentCharacter then
+            for _, part in pairs(currentCharacter:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+-- GUI létrehozása
 local function initNebulaHub()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+    currentCharacter = player.Character or player.CharacterAdded:Wait()
+    local humanoid = currentCharacter:WaitForChild("Humanoid")
 
     local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "NebulaHubGUI"
     ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
     local Frame = Instance.new("Frame")
@@ -21,7 +58,7 @@ local function initNebulaHub()
     Frame.BorderSizePixel = 0
     Frame.Active = true
     Frame.Draggable = true
-    Frame.Visible = false
+    Frame.Visible = true
 
     local Title = Instance.new("TextLabel")
     Title.Parent = Frame
@@ -46,36 +83,35 @@ local function initNebulaHub()
         return btn
     end
 
-    local savedPosition = nil
-
+    -- Set/Tp Position
     local setBtn = createButton("Set Position",40,Color3.fromRGB(255,80,80))
     setBtn.MouseButton1Click:Connect(function()
-        character = player.Character or player.CharacterAdded:Wait()
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            savedPosition = character.HumanoidRootPart.Position
+        currentCharacter = player.Character or player.CharacterAdded:Wait()
+        if currentCharacter and currentCharacter:FindFirstChild("HumanoidRootPart") then
+            savedPosition = currentCharacter.HumanoidRootPart.Position
             print("[NebulaHub] Position saved:", savedPosition)
         end
     end)
 
     local tpBtn = createButton("Teleport to Position",85,Color3.fromRGB(255,80,80))
     tpBtn.MouseButton1Click:Connect(function()
-        character = player.Character or player.CharacterAdded:Wait()
-        if savedPosition and character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = CFrame.new(savedPosition + Vector3.new(0,3,0))
+        currentCharacter = player.Character or player.CharacterAdded:Wait()
+        if savedPosition and currentCharacter and currentCharacter:FindFirstChild("HumanoidRootPart") then
+            currentCharacter.HumanoidRootPart.CFrame = CFrame.new(savedPosition + Vector3.new(0,3,0))
             print("[NebulaHub] Teleported to saved position.")
         else
             warn("[NebulaHub] No saved position!")
         end
     end)
 
+    -- Speed Boost
     local speedBtn = createButton("Speed Boost: Off",130,Color3.fromRGB(255,80,80))
     local speedOn = false
     local originalSpeed = humanoid.WalkSpeed
-
     speedBtn.MouseButton1Click:Connect(function()
         speedOn = not speedOn
-        character = player.Character or player.CharacterAdded:Wait()
-        humanoid = character:FindFirstChild("Humanoid")
+        currentCharacter = player.Character or player.CharacterAdded:Wait()
+        humanoid = currentCharacter:FindFirstChild("Humanoid")
         if speedOn then
             if humanoid then
                 originalSpeed = humanoid.WalkSpeed
@@ -90,28 +126,20 @@ local function initNebulaHub()
         end
     end)
 
+    -- Noclip
     local noclipBtn = createButton("Noclip: Off",175,Color3.fromRGB(255,80,80))
-    local noclip = false
     noclipBtn.MouseButton1Click:Connect(function()
-        noclip = not noclip
+        toggleNoclip(not noclip)
         noclipBtn.Text = noclip and "Noclip: On" or "Noclip: Off"
     end)
 
-    game:GetService("RunService").Stepped:Connect(function()
-        if noclip and player.Character then
-            for _, part in pairs(player.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end
-    end)
-
+    -- Discord
     local discordBtn = createButton("Discord",220,Color3.fromRGB(80,120,255))
     discordBtn.MouseButton1Click:Connect(function()
         setclipboard("https://discord.gg/nsWY4CRj5A")
     end)
 
+    -- GUI Toggle
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0,50,0,50)
@@ -129,7 +157,7 @@ local function initNebulaHub()
     corner.CornerRadius = UDim.new(1,0)
     corner.Parent = ToggleButton
 
-    local guiVisible = false
+    local guiVisible = true
     ToggleButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         Frame.Visible = guiVisible
@@ -137,7 +165,7 @@ local function initNebulaHub()
     end)
 end
 
--- Kulcs ellenőrzés
+-- Key ellenőrzés
 local function checkKey()
     local key = ""
     if isfile(keyFile) then
@@ -145,12 +173,12 @@ local function checkKey()
     end
 
     if key == validKey then
-        initNebulaHub()
+        if not player:FindFirstChild("PlayerGui"):FindFirstChild("NebulaHubGUI") then
+            initNebulaHub()
+        end
     else
-        -- Kulcs GUI
         local ScreenGui = Instance.new("ScreenGui")
         ScreenGui.Parent = player:WaitForChild("PlayerGui")
-
         local KeyFrame = Instance.new("Frame")
         KeyFrame.Parent = ScreenGui
         KeyFrame.Size = UDim2.new(0,300,0,200)
@@ -209,17 +237,11 @@ local function checkKey()
     end
 end
 
--- Figyeljük a karakter spawn-t, hogy halál után is induljon
-player.CharacterAdded:Connect(function()
+-- Karakter spawn figyelése (halál után újra létrehozza a GUI-t és visszaállítja a funkciókat)
+player.CharacterAdded:Connect(function(char)
+    currentCharacter = char
     checkKey()
 end)
 
--- Figyeljük a teleport eseményeket, szerverváltás után is fusson
-game:GetService("Players").PlayerAdded:Connect(function(plr)
-    if plr == player then
-        checkKey()
-    end
-end)
-
 -- Első futtatás
-checkKey()  
+checkKey()
