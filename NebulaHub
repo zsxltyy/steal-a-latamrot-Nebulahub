@@ -67,6 +67,33 @@ local function toggleSpeed()
     end
 end
 
+-- Stabil teleport
+local function teleportToSavedPosition()
+    currentCharacter = player.Character or player.CharacterAdded:Wait()
+    local hrp = currentCharacter:FindFirstChild("HumanoidRootPart")
+    local humanoid = getHumanoid()
+    if savedPosition and hrp and humanoid then
+        local wasNoclip = noclip
+        if not noclip then toggleNoclip(true) end
+
+        hrp.CFrame = CFrame.new(savedPosition + Vector3.new(0,3,0))
+        hrp.Velocity = Vector3.new(0,0,0)
+        hrp.RotVelocity = Vector3.new(0,0,0)
+
+        for i=1,3 do
+            RunService.Heartbeat:Wait()
+            hrp.CFrame = CFrame.new(savedPosition + Vector3.new(0,3,0))
+            hrp.Velocity = Vector3.new(0,0,0)
+            hrp.RotVelocity = Vector3.new(0,0,0)
+        end
+
+        if not wasNoclip then toggleNoclip(false) end
+        print("[NebulaHub] Teleported to saved position stably.")
+    else
+        warn("[NebulaHub] No saved position or HumanoidRootPart missing!")
+    end
+end
+
 -- GUI létrehozása
 local function initNebulaHub()
     currentCharacter = player.Character or player.CharacterAdded:Wait()
@@ -124,15 +151,7 @@ local function initNebulaHub()
     end)
 
     local tpBtn = createButton("Teleport to Position",85,Color3.fromRGB(255,80,80))
-    tpBtn.MouseButton1Click:Connect(function()
-        currentCharacter = player.Character or player.CharacterAdded:Wait()
-        if savedPosition and currentCharacter and currentCharacter:FindFirstChild("HumanoidRootPart") then
-            currentCharacter.HumanoidRootPart.CFrame = CFrame.new(savedPosition + Vector3.new(0,3,0))
-            print("[NebulaHub] Teleported to saved position.")
-        else
-            warn("[NebulaHub] No saved position!")
-        end
-    end)
+    tpBtn.MouseButton1Click:Connect(teleportToSavedPosition)
 
     -- Speed Boost
     speedBtn = createButton("Speed Boost: Off",130,Color3.fromRGB(255,80,80))
@@ -249,7 +268,7 @@ local function checkKey()
     end
 end
 
--- Karakter spawn figyelése (halál után újra létrehozza a GUI-t és visszaállítja a funkciókat)
+-- Karakter spawn figyelése
 player.CharacterAdded:Connect(function(char)
     currentCharacter = char
     local humanoid = getHumanoid()
